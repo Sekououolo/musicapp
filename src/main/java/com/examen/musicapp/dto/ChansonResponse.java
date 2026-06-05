@@ -14,4 +14,6 @@ public class ChansonResponse {
     private int numeroOrdre;
     private String titreAlbum;   // juste le titre de l'album
     private String nomArtiste;   // pratique pour le front
+    private String fichierMp3;
+    private boolean hasMp3;
 }

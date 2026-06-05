@@ -8,8 +8,15 @@ import com.examen.musicapp.mapper.ChansonMapper;
 import com.examen.musicapp.repository.AlbumRepository;
 import com.examen.musicapp.repository.ChansonRepository;
 import com.examen.musicapp.service.ChansonService;
+import com.examen.musicapp.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.util.List;
 
 @Service
@@ -19,6 +26,7 @@ public class ChansonServiceImpl implements ChansonService {
     private final ChansonRepository chansonRepository;
     private final AlbumRepository albumRepository;
     private final ChansonMapper mapper;
+    private final FileStorageService fileStorageService;
 
     @Override
     public ChansonResponse creer(ChansonRequest request) {
@@ -67,5 +75,40 @@ public class ChansonServiceImpl implements ChansonService {
     @Override
     public List<ChansonResponse> getByAlbum(Long albumId) {
         return mapper.toResponseList(chansonRepository.findByAlbumId(albumId));
+    }
+
+    @Override
+    @Transactional
+    public ChansonResponse uploadMp3(Long id, MultipartFile file) {
+        Chanson chanson = chansonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Chanson non trouvée avec l'id: " + id));
+        
+        String fileName = fileStorageService.storeFile(file, id);
+        chanson.setFichierMp3(fileName);
+        
+        return mapper.toResponse(chansonRepository.save(chanson));
+    }
+
+    @Override
+    public Resource getAudioFile(Long id) {
+        Chanson chanson = chansonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Chanson non trouvée avec l'id: " + id));
+
+        if (chanson.getFichierMp3() == null || chanson.getFichierMp3().isEmpty()) {
+            throw new RuntimeException("Aucun fichier audio associé à cette chanson.");
+        }
+
+        try {
+            Path filePath = fileStorageService.loadFile(chanson.getFichierMp3());
+            Resource resource = new UrlResource(filePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else {
+                throw new RuntimeException("Le fichier audio est introuvable ou illisible.");
+            }
+        } catch (MalformedURLException ex) {
+            throw new RuntimeException("Erreur lors de la lecture du fichier audio.", ex);
+        }
     }
 }

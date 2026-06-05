@@ -26,4 +26,6 @@ public class Chanson {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id", nullable = false)
     private Album album;
+
+    private String fichierMp3;  // Chemin du fichier MP3 sur le disque
 }

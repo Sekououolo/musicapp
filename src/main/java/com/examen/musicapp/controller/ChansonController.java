@@ -7,8 +7,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.Resource;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
@@ -57,5 +61,25 @@ public class ChansonController {
     @Operation(summary = "Chansons d'un album")
     public ResponseEntity<List<ChansonResponse>> getByAlbum(@PathVariable Long albumId) {
         return ResponseEntity.ok(service.getByAlbum(albumId));
+    }
+
+    // POST /api/v1/chansons/1/upload
+    @PostMapping(value = "/{id}/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "Uploader un fichier MP3 pour une chanson")
+    public ResponseEntity<ChansonResponse> uploadMp3(
+            @PathVariable Long id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(service.uploadMp3(id, file));
+    }
+
+    // GET /api/v1/chansons/1/stream
+    @GetMapping("/{id}/stream")
+    @Operation(summary = "Streamer le fichier MP3 d'une chanson")
+    public ResponseEntity<Resource> streamMp3(@PathVariable Long id) {
+        Resource resource = service.getAudioFile(id);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("audio/mpeg"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
     }
 }
