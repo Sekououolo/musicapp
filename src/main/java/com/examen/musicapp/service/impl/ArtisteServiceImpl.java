@@ -12,25 +12,23 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor  // Lombok génère le constructeur avec tous les champs final
+@RequiredArgsConstructor
 public class ArtisteServiceImpl implements ArtisteService {
 
-    // @RequiredArgsConstructor + final = injection de dépendances automatique
-    // C'est mieux que @Autowired sur le champ directement
     private final ArtisteRepository repository;
     private final ArtisteMapper mapper;
 
     @Override
     public ArtisteResponse creer(ArtisteRequest request) {
-        Artiste artiste = mapper.toEntity(request);  // DTO → Entity
-        Artiste saved = repository.save(artiste);     // Sauvegarde en BD
-        return mapper.toResponse(saved);              // Entity → DTO réponse
+        Artiste artiste = mapper.toEntity(request);
+        Artiste saved = repository.save(artiste);
+        return mapper.toResponse(saved);
     }
 
     @Override
     public ArtisteResponse getById(Long id) {
         Artiste artiste = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Artiste non trouvé avec l'id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Artiste", id));
         return mapper.toResponse(artiste);
     }
 
@@ -42,8 +40,7 @@ public class ArtisteServiceImpl implements ArtisteService {
     @Override
     public ArtisteResponse modifier(Long id, ArtisteRequest request) {
         Artiste artiste = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Artiste non trouvé avec l'id: " + id));
-        // On met à jour seulement les champs modifiables
+                .orElseThrow(() -> new ResourceNotFoundException("Artiste", id));
         artiste.setNom(request.getNom());
         artiste.setNationalite(request.getNationalite());
         artiste.setBiographie(request.getBiographie());
@@ -53,7 +50,7 @@ public class ArtisteServiceImpl implements ArtisteService {
     @Override
     public void supprimer(Long id) {
         if (!repository.existsById(id)) {
-            throw new ResourceNotFoundException("Artiste " , id);
+            throw new ResourceNotFoundException("Artiste", id);
         }
         repository.deleteById(id);
     }

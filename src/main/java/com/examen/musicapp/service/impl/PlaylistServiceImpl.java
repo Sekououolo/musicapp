@@ -4,6 +4,7 @@ import com.examen.musicapp.dto.PlaylistRequest;
 import com.examen.musicapp.dto.PlaylistResponse;
 import com.examen.musicapp.entity.Chanson;
 import com.examen.musicapp.entity.Playlist;
+import com.examen.musicapp.exception.ResourceNotFoundException;
 import com.examen.musicapp.mapper.PlaylistMapper;
 import com.examen.musicapp.repository.ChansonRepository;
 import com.examen.musicapp.repository.PlaylistRepository;
@@ -47,7 +48,7 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     public void supprimer(Long id) {
         if (!playlistRepository.existsById(id)) {
-            throw new RuntimeException("Playlist non trouvee avec l'id: " + id);
+            throw new ResourceNotFoundException("Playlist", id); // ← corrigé
         }
         playlistRepository.deleteById(id);
     }
@@ -82,11 +83,11 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     private Playlist getPlaylist(Long id) {
         return playlistRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Playlist non trouvee avec l'id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Playlist", id)); // ← corrigé
     }
 
     private Chanson getChanson(Long id) {
         return chansonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Chanson non trouvee avec l'id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Chanson", id)); // ← corrigé
     }
 }

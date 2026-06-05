@@ -4,6 +4,7 @@ import com.examen.musicapp.dto.AlbumResponse;
 import com.examen.musicapp.dto.GenreRequest;
 import com.examen.musicapp.dto.GenreResponse;
 import com.examen.musicapp.entity.Genre;
+import com.examen.musicapp.exception.ResourceNotFoundException;
 import com.examen.musicapp.mapper.AlbumMapper;
 import com.examen.musicapp.mapper.GenreMapper;
 import com.examen.musicapp.repository.AlbumRepository;
@@ -48,7 +49,7 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public void supprimer(Long id) {
         if (!genreRepository.existsById(id)) {
-            throw new RuntimeException("Genre non trouve avec l'id: " + id);
+            throw new ResourceNotFoundException("Genre", id); // ← corrigé
         }
         genreRepository.deleteById(id);
     }
@@ -56,7 +57,7 @@ public class GenreServiceImpl implements GenreService {
     @Override
     public List<AlbumResponse> getAlbumsByGenre(Long id) {
         if (!genreRepository.existsById(id)) {
-            throw new RuntimeException("Genre non trouve avec l'id: " + id);
+            throw new ResourceNotFoundException("Genre", id); // ← corrigé
         }
         return albumMapper.toResponseList(albumRepository.findByGenreId(id));
     }
@@ -68,6 +69,6 @@ public class GenreServiceImpl implements GenreService {
 
     private Genre getGenre(Long id) {
         return genreRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Genre non trouve avec l'id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Genre", id)); // ← corrigé
     }
 }

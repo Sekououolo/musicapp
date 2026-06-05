@@ -32,24 +32,19 @@ public class ChansonServiceImpl implements ChansonService {
 
     @Override
     public ChansonResponse creer(ChansonRequest request) {
-
         Album album = albumRepository.findById(request.getAlbumId())
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Album", request.getAlbumId()));
-
         Chanson chanson = mapper.toEntity(request);
         chanson.setAlbum(album);
-
         return mapper.toResponse(chansonRepository.save(chanson));
     }
 
     @Override
     public ChansonResponse getById(Long id) {
-
         Chanson chanson = chansonRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Chanson", id));
-
         return mapper.toResponse(chanson);
     }
 
@@ -60,109 +55,75 @@ public class ChansonServiceImpl implements ChansonService {
 
     @Override
     public ChansonResponse modifier(Long id, ChansonRequest request) {
-
         Chanson chanson = chansonRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Chanson", id));
-
         chanson.setTitre(request.getTitre());
         chanson.setDuree(request.getDuree());
         chanson.setNumeroOrdre(request.getNumeroOrdre());
-
         if (request.getAlbumId() != null) {
-
             Album album = albumRepository.findById(request.getAlbumId())
                     .orElseThrow(() ->
                             new ResourceNotFoundException("Album", request.getAlbumId()));
-
             chanson.setAlbum(album);
         }
-
         return mapper.toResponse(chansonRepository.save(chanson));
     }
 
     @Override
     public void supprimer(Long id) {
-
         if (!chansonRepository.existsById(id)) {
             throw new ResourceNotFoundException("Chanson", id);
         }
-
         chansonRepository.deleteById(id);
     }
 
     @Override
     public List<ChansonResponse> getByAlbum(Long albumId) {
-
-        return mapper.toResponseList(
-                chansonRepository.findByAlbumId(albumId)
-        );
+        return mapper.toResponseList(chansonRepository.findByAlbumId(albumId));
     }
 
     @Override
     @Transactional
     public ChansonResponse uploadMp3(Long id, MultipartFile file) {
-
         Chanson chanson = chansonRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Chanson", id));
-
         String fileName = fileStorageService.storeFile(file, id);
-
         chanson.setFichierMp3(fileName);
-
         return mapper.toResponse(chansonRepository.save(chanson));
     }
 
     @Override
     @Transactional
     public Resource getAudioFile(Long id) {
-
         Chanson chanson = chansonRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Chanson", id));
 
         if (chanson.getFichierMp3() == null || chanson.getFichierMp3().isEmpty()) {
-            throw new RuntimeException(
-                    "Aucun fichier audio associé à cette chanson."
-            );
+            throw new ResourceNotFoundException("FichierAudio", id); // ← corrigé
         }
 
-        // Incrémente le nombre d'écoutes
         chansonRepository.incrementerEcoutes(id);
 
         try {
-
-            Path filePath = fileStorageService.loadFile(
-                    chanson.getFichierMp3()
-            );
-
-            Resource resource = new UrlResource(
-                    filePath.toUri()
-            );
+            Path filePath = fileStorageService.loadFile(chanson.getFichierMp3());
+            Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists() && resource.isReadable()) {
                 return resource;
             }
 
-            throw new RuntimeException(
-                    "Le fichier audio est introuvable ou illisible."
-            );
+            throw new ResourceNotFoundException("FichierAudio", id); // ← corrigé
 
         } catch (MalformedURLException ex) {
-
-            throw new RuntimeException(
-                    "Erreur lors de la lecture du fichier audio.",
-                    ex
-            );
+            throw new ResourceNotFoundException("FichierAudio", id); // ← corrigé
         }
     }
 
     @Override
     public List<ChansonResponse> getTop10() {
-
-        return mapper.toResponseList(
-                chansonRepository.findTop10ByOrderByNombreEcoutesDesc()
-        );
+        return mapper.toResponseList(chansonRepository.findTop10ByOrderByNombreEcoutesDesc());
     }
 }
