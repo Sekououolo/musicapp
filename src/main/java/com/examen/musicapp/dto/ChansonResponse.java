@@ -16,4 +16,5 @@ public class ChansonResponse {
     private String nomArtiste;   // pratique pour le front
     private String fichierMp3;
     private boolean hasMp3;
+    private int nombreEcoutes;
 }

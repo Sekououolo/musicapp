@@ -12,6 +12,7 @@ public interface ChansonMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "album", ignore = true)
     @Mapping(target = "fichierMp3", ignore = true)
+    @Mapping(target = "nombreEcoutes", ignore = true)
     Chanson toEntity(ChansonRequest request);
 
     @Mapping(target = "titreAlbum", expression = "java(chanson.getAlbum().getTitre())")

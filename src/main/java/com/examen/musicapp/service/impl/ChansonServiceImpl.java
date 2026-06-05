@@ -90,6 +90,7 @@ public class ChansonServiceImpl implements ChansonService {
     }
 
     @Override
+    @Transactional
     public Resource getAudioFile(Long id) {
         Chanson chanson = chansonRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Chanson non trouvée avec l'id: " + id));
@@ -97,6 +98,9 @@ public class ChansonServiceImpl implements ChansonService {
         if (chanson.getFichierMp3() == null || chanson.getFichierMp3().isEmpty()) {
             throw new RuntimeException("Aucun fichier audio associé à cette chanson.");
         }
+
+        // Incrémentation du nombre d'écoutes
+        chansonRepository.incrementerEcoutes(id);
 
         try {
             Path filePath = fileStorageService.loadFile(chanson.getFichierMp3());

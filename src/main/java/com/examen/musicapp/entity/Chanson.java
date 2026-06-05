@@ -28,4 +28,8 @@ public class Chanson {
     private Album album;
 
     private String fichierMp3;  // Chemin du fichier MP3 sur le disque
+
+    @Builder.Default
+    @Column(nullable = false, columnDefinition = "int default 0")
+    private int nombreEcoutes = 0; // Compteur d'écoutes
 }
