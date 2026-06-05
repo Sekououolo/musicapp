@@ -1,4 +1,4 @@
-package entity;
+package com.examen.musicapp.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
