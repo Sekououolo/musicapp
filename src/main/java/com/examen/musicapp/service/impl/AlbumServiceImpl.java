@@ -5,6 +5,7 @@ import com.examen.musicapp.dto.AlbumResponse;
 import com.examen.musicapp.entity.Album;
 import com.examen.musicapp.entity.Artiste;
 import com.examen.musicapp.entity.Genre;
+import com.examen.musicapp.exception.ResourceNotFoundException;
 import com.examen.musicapp.mapper.AlbumMapper;
 import com.examen.musicapp.repository.AlbumRepository;
 import com.examen.musicapp.repository.ArtisteRepository;
@@ -26,21 +27,20 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public AlbumResponse creer(AlbumRequest request) {
         Artiste artiste = artisteRepository.findById(request.getArtisteId())
-                .orElseThrow(() -> new RuntimeException("Artiste non trouve avec l'id: " + request.getArtisteId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Artiste", request.getArtisteId()));
 
         Album album = mapper.toEntity(request);
         album.setArtiste(artiste);
         if (request.getGenreId() != null) {
             album.setGenre(getGenre(request.getGenreId()));
         }
-
         return mapper.toResponse(albumRepository.save(album));
     }
 
     @Override
     public AlbumResponse getById(Long id) {
         Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album non trouve avec l'id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Album", id));
         return mapper.toResponse(album);
     }
 
@@ -52,7 +52,7 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public AlbumResponse modifier(Long id, AlbumRequest request) {
         Album album = albumRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Album non trouve avec l'id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Album", id));
 
         album.setTitre(request.getTitre());
         album.setAnnee(request.getAnnee());
@@ -60,17 +60,16 @@ public class AlbumServiceImpl implements AlbumService {
 
         if (request.getArtisteId() != null) {
             Artiste artiste = artisteRepository.findById(request.getArtisteId())
-                    .orElseThrow(() -> new RuntimeException("Artiste non trouve"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Artiste", request.getArtisteId()));
             album.setArtiste(artiste);
         }
-
         return mapper.toResponse(albumRepository.save(album));
     }
 
     @Override
     public void supprimer(Long id) {
         if (!albumRepository.existsById(id)) {
-            throw new RuntimeException("Album non trouve avec l'id: " + id);
+            throw new ResourceNotFoundException("Album", id);
         }
         albumRepository.deleteById(id);
     }
@@ -87,6 +86,6 @@ public class AlbumServiceImpl implements AlbumService {
 
     private Genre getGenre(Long genreId) {
         return genreRepository.findById(genreId)
-                .orElseThrow(() -> new RuntimeException("Genre non trouve avec l'id: " + genreId));
+                .orElseThrow(() -> new ResourceNotFoundException("Genre", genreId));
     }
 }

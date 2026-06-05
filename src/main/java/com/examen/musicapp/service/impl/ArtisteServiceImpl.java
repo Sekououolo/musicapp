@@ -3,6 +3,7 @@ package com.examen.musicapp.service.impl;
 import com.examen.musicapp.dto.ArtisteRequest;
 import com.examen.musicapp.dto.ArtisteResponse;
 import com.examen.musicapp.entity.Artiste;
+import com.examen.musicapp.exception.ResourceNotFoundException;
 import com.examen.musicapp.mapper.ArtisteMapper;
 import com.examen.musicapp.repository.ArtisteRepository;
 import com.examen.musicapp.service.ArtisteService;
@@ -52,7 +53,7 @@ public class ArtisteServiceImpl implements ArtisteService {
     @Override
     public void supprimer(Long id) {
         if (!repository.existsById(id)) {
-            throw new RuntimeException("Artiste non trouvé avec l'id: " + id);
+            throw new ResourceNotFoundException("Artiste " , id);
         }
         repository.deleteById(id);
     }
