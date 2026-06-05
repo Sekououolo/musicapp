@@ -14,4 +14,5 @@ public interface ChansonService {
     List<ChansonResponse> getByAlbum(Long albumId);
     ChansonResponse uploadMp3(Long id, org.springframework.web.multipart.MultipartFile file);
     Resource getAudioFile(Long id);
+    List<ChansonResponse> getTop10();
 }

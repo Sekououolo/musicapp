@@ -7,5 +7,7 @@ import java.util.List;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album, Long> {
     List<Album> findByArtisteId(Long artisteId);  // tous les albums d'un artiste
-    List<Album> findByGenre(String genre);  // tous les albums d'un genre
+    List<Album> findByGenreId(Long genreId);
+    List<Album> findByGenreNomContainingIgnoreCase(String genre);
+    List<Album> findByTitreContainingIgnoreCase(String titre);
 }

@@ -115,4 +115,9 @@ public class ChansonServiceImpl implements ChansonService {
             throw new RuntimeException("Erreur lors de la lecture du fichier audio.", ex);
         }
     }
+
+    @Override
+    public List<ChansonResponse> getTop10() {
+        return mapper.toResponseList(chansonRepository.findTop10ByOrderByNombreEcoutesDesc());
+    }
 }

@@ -14,4 +14,8 @@ public interface ChansonRepository extends JpaRepository<Chanson, Long> {
     @Modifying
     @Query("UPDATE Chanson c SET c.nombreEcoutes = c.nombreEcoutes + 1 WHERE c.id = :id")
     void incrementerEcoutes(@Param("id") Long id);
+
+    List<Chanson> findTop10ByOrderByNombreEcoutesDesc();
+
+    List<Chanson> findByTitreContainingIgnoreCase(String titre);
 }

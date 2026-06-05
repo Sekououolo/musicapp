@@ -10,6 +10,6 @@ import lombok.*;
 public class AlbumRequest {
     private String titre;
     private int annee;
-    private String genre;
+    private Long genreId;
     private Long artisteId; // on envoie juste l'ID de l'artiste
 }

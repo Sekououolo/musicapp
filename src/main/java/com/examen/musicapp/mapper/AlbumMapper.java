@@ -11,11 +11,14 @@ import java.util.stream.Collectors;
 public interface AlbumMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "artiste", ignore = true)  // géré dans le Service
+    @Mapping(target = "artiste", ignore = true)
+    @Mapping(target = "genre", ignore = true)
     @Mapping(target = "chansons", ignore = true)
     Album toEntity(AlbumRequest request);
 
-    @Mapping(target = "nomArtiste", expression = "java(album.getArtiste().getNom())")
+    @Mapping(target = "genreId", expression = "java(album.getGenre() == null ? null : album.getGenre().getId())")
+    @Mapping(target = "nomGenre", expression = "java(album.getGenre() == null ? null : album.getGenre().getNom())")
+    @Mapping(target = "nomArtiste", expression = "java(album.getArtiste() == null ? null : album.getArtiste().getNom())")
     @Mapping(target = "nombreChansons", expression = "java(getNombreChansons(album))")
     @Mapping(target = "titresChansons", expression = "java(getTitresChansons(album))")
     AlbumResponse toResponse(Album album);

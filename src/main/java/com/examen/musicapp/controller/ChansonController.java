@@ -10,9 +10,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRange;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -33,6 +36,13 @@ public class ChansonController {
     @Operation(summary = "Récupérer toutes les chansons")
     public ResponseEntity<List<ChansonResponse>> getAll() {
         return ResponseEntity.ok(service.getAll());
+    }
+
+    // GET /api/v1/chansons/top10
+    @GetMapping("/top10")
+    @Operation(summary = "Récupérer le top 10 des chansons les plus écoutées")
+    public ResponseEntity<List<ChansonResponse>> getTop10() {
+        return ResponseEntity.ok(service.getTop10());
     }
 
     @GetMapping("/{id}")
@@ -75,11 +85,29 @@ public class ChansonController {
     // GET /api/v1/chansons/1/stream
     @GetMapping("/{id}/stream")
     @Operation(summary = "Streamer le fichier MP3 d'une chanson")
-    public ResponseEntity<Resource> streamMp3(@PathVariable Long id) {
+    public ResponseEntity<?> streamMp3(@PathVariable Long id, @RequestHeader HttpHeaders headers) throws IOException {
         Resource resource = service.getAudioFile(id);
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("audio/mpeg"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+        long contentLength = resource.contentLength();
+        List<HttpRange> ranges = headers.getRange();
+        MediaType audioMpeg = MediaType.parseMediaType("audio/mpeg");
+
+        if (ranges.isEmpty()) {
+            return ResponseEntity.ok()
+                    .contentType(audioMpeg)
+                    .contentLength(contentLength)
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                    .body(resource);
+        }
+
+        ResourceRegion region = ranges.get(0).toResourceRegion(resource);
+        long start = region.getPosition();
+        long end = Math.min(start + region.getCount() - 1, contentLength - 1);
+
+        return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                .contentType(audioMpeg)
+                .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + contentLength)
+                .body(region);
     }
 }

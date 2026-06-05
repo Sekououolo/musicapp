@@ -22,7 +22,9 @@ public class Album {
 
     private int annee;         // Année de sortie
 
-    private String genre;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "genre_id")
+    private Genre genre;
     // Un album appartient à UN seul artiste
     // @ManyToOne : "plusieurs albums pour un artiste"
     // @JoinColumn : crée une colonne "artiste_id" dans la table albums
